@@ -200,35 +200,39 @@ def scroll_and_collect_pages(driver_manager, links_count, scroll_pause, find_bra
             links = feed.find_all('a')
             feed.find_all('div', {'role': 'article'})
 
-            # Достаем ссылки из списка отбираем только нужные и чистые ссылки
-            # Не сохраняем повторные ссылки в pages[]
+            if 'End of Results' not in feed.text:
 
-            for link in links:
-                if '__tn__=%3C' in link.get('href'):
-                    continue
+                # Достаем ссылки из списка отбираем только нужные и чистые ссылки
+                # Не сохраняем повторные ссылки в pages[]
 
-                if link.get('href') not in pages and link.get('href') + '\n' not in read_relevant_links:
-                    pages.append(link.get('href'))
-                elif link.get('href') in pages:
-                    pages.remove(link.get('href'))
+                for link in links:
+                    if '__tn__=%3C' in link.get('href'):
+                        continue
+
+                    if link.get('href') not in pages and link.get('href') + '\n' not in read_relevant_links:
+                        pages.append(link.get('href'))
+                    elif link.get('href') in pages:
+                        pages.remove(link.get('href'))
+                    else:
+                        continue
+
+
+
+                # Если не нужно при повторном проходе сравнивать ссылки с предыдущими проходами
+                if find_brand_new_link == False:
+                    for p in pages:
+                        if p in pages and p + '\n' in set(read_relevant_links):
+                            pages.remove(p)
+                        else:
+                            pass
                 else:
-                    continue
-
-
-
-            # Если не нужно при повторном проходе сравнивать ссылки с предыдущими проходами
-            if find_brand_new_link == False:
-                for p in pages:
-                    if p in pages and p + '\n' in set(read_relevant_links):
-                        pages.remove(p)
-                    else:
-                        pass
+                    for p2 in pages:
+                        if p2 + '\n' not in set(read_brand_new_links):
+                            writer_brand_new_link_in_file(p2)
+                        else:
+                            pass
             else:
-                for p2 in pages:
-                    if p2 + '\n' not in set(read_brand_new_links):
-                        writer_brand_new_link_in_file(p2)
-                    else:
-                        pass
+                break
 
     except Exception as e:
         print(e)

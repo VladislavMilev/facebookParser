@@ -57,7 +57,7 @@ class Login(SearchEngine):
 
     def open_tab(self, link):
 
-        print(link)
+        # print(link)
 
         # Открыть новое окно и переключиться на него
         self.driver.execute_script("window.open('');")
@@ -84,7 +84,7 @@ class Login(SearchEngine):
                 info_block = self.find_element(Facebook_login.info_block_locator2).text
                 info = info_block.split('\n')
         except Exception as e:
-            print(e)
+            # print(e)
             return
 
 
@@ -95,7 +95,7 @@ class Login(SearchEngine):
             phone = util.find_phone(info, link)
             site = util.find_site(info, link)
         except Exception as e:
-            print(e)
+            # print(e)
             return
 
 

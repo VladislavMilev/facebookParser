@@ -1,6 +1,5 @@
-from datetime import datetime
 # URL страницы с фильтром поиска для сбора и перебора этих страниц
-FILTER_URL = 'https://www.facebook.com/search/pages?q=restaurant&filters=eyJmaWx0ZXJfcGFnZXNfbG9jYXRpb246MCI6IntcIm5hbWVcIjpcImZpbHRlcl9wYWdlc19sb2NhdGlvblwiLFwiYXJnc1wiOlwiMTAyMTQ2NjYzMTYwODMxXCJ9In0%3D'
+FILTER_URL = 'https://www.facebook.com/search/pages?q=restaurant&filters=eyJmaWx0ZXJfcGFnZXNfbG9jYXRpb246MCI6IntcIm5hbWVcIjpcImZpbHRlcl9wYWdlc19sb2NhdGlvblwiLFwiYXJnc1wiOlwiMTA4MjUyNTUyNTI5MzMyXCJ9In0%3D'
 
 # Константа FACEBOOK URL
 FACEBOOK_URL = 'https://www.facebook.com/'
@@ -8,7 +7,7 @@ LOGIN = ''
 PASSWORD = ''
 
 # Количество страниц, которые необходимо проверить
-LINKS_COUNT = 100
+LINKS_COUNT = 400
 
 # Время в секундах - сколько нужно подождать перед подгрузкой пагинации на странице отфильтрованных профилей
 SCROLL_PAUSE = 1
