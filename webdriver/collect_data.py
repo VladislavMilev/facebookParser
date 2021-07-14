@@ -33,8 +33,6 @@ class Facebook_login:
     info_block_locator3 = (By.XPATH, "/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[1]/div[2]/div/div[1]/div/div/div")
 
 
-
-
 class Login(SearchEngine):
 
     def enter_login(self, user_login):
@@ -58,6 +56,9 @@ class Login(SearchEngine):
 
 
     def open_tab(self, link):
+
+        print(link)
+
         # Открыть новое окно и переключиться на него
         self.driver.execute_script("window.open('');")
         self.driver.switch_to.window(self.driver.window_handles[1])
@@ -72,22 +73,30 @@ class Login(SearchEngine):
         except:
             pass
 
-        if 'About' in ib.text:
-            info_block = self.find_element(Facebook_login.info_block_locator1).text
-            info = info_block.split('\n')
-        elif 'Intro' in ib.text:
-            info_block = self.find_element(Facebook_login.info_block_locator3).text
-            info = info_block.split('\n')
-        else:
-            info_block = self.find_element(Facebook_login.info_block_locator2).text
-            info = info_block.split('\n')
+        try:
+            if 'About' in ib.text:
+                info_block = self.find_element(Facebook_login.info_block_locator1).text
+                info = info_block.split('\n')
+            elif 'Intro' in ib.text:
+                info_block = self.find_element(Facebook_login.info_block_locator3).text
+                info = info_block.split('\n')
+            else:
+                info_block = self.find_element(Facebook_login.info_block_locator2).text
+                info = info_block.split('\n')
+        except Exception as e:
+            print(e)
+            return
 
 
         # Находим данные из блока информации на странице
-        location = util.find_location(info, link)
-        email = util.find_email(info, link)
-        phone = util.find_phone(info, link)
-        site = util.find_site(info, link)
+        try:
+            location = util.find_location(info, link)
+            email = util.find_email(info, link)
+            phone = util.find_phone(info, link)
+            site = util.find_site(info, link)
+        except Exception as e:
+            print(e)
+            return
 
 
         # Находим название страницы
@@ -108,28 +117,35 @@ class Login(SearchEngine):
                 if self.find_element(Facebook_login.avatar_locator) != None:
                     self.find_element(Facebook_login.avatar_locator).click()
                 else:
-                    # TODO try: поиска локатора второго профиля + дропдаун
                     self.find_element(Facebook_login.avatar_circle_locator).click()
                     self.find_element(Facebook_login.avatar_dropdown_locator).click()
             except:
-                self.find_element(Facebook_login.avatar2_locator).click()
+                try:
+                    self.find_element(Facebook_login.avatar2_locator).click()
+                except Exception as e:
+                    # print(e)
+                    return
         except Exception as e:
-            print(e)
+            # print(e)
+            return
 
 
         # Ховер на дату чтобы появился tooltip и вытаскиваем его из dom
-        element = self.find_element(Facebook_login.data)
-        action = ActionChains(self.driver)
-        action.move_to_element(element).perform()
-        time.sleep(1)
+        try:
+            element = self.find_element(Facebook_login.data)
+            action = ActionChains(self.driver)
+            action.move_to_element(element).perform()
+            time.sleep(1)
 
-        last_photo_date_update = self.find_element(Facebook_login.tooltip).text
-
+            last_photo_date_update = self.find_element(Facebook_login.tooltip).text
+        except:
+            return
 
         date = util.coincidence_date(last_photo_date_update)
+
         if date:
             util.writer_relevant_link_to_file(link)
-            util.writer_page_info(str({'Page name': page_name, 'Email': email, 'Phone': phone, 'Site': site, 'Location': location, 'Last photo update': last_photo_date_update}))
+            util.writer_page_info(str({link: {'Page name': page_name, 'Email': email, 'Phone': phone, 'Site': site, 'Location': location, 'Last photo update': last_photo_date_update}}))
 
         # close the active tab
         self.driver.close()

@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from webdriver.collect_data import Login
 from webdriver import util
 import CONFIG as conf
 import time
+from telegrambot import bot
 
 
 def test_login(driver_manager):
@@ -28,6 +31,8 @@ def test_login(driver_manager):
         truncate_before=conf.TRUNCATE_BEFORE
     )
 
+    conf.DATA_FILE = datetime.now().strftime("%m-%d-%Y-%H-%M") + '.txt'
+
     # Вызов главной функции сборщика
     # for tab in range(1):
     #     pars.open_tab(pages[tab])
@@ -35,3 +40,12 @@ def test_login(driver_manager):
 
     for tab in pages:
         pars.open_tab(tab)
+
+    # pars.open_tab('https://www.facebook.com/bavarian.eaglestreetpier')
+    # pars.open_tab('https://www.facebook.com/woodenhorserestaurant/')
+
+
+    try:
+        bot.send_file_to_telegrambot()
+    except:
+        print('Файл с отчетом не был создан!')

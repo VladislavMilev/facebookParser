@@ -127,23 +127,23 @@ def find_site(info, link):
 
 
 def writer_relevant_link_to_file(link):
-    with open(path(f'../files/{conf.RELEVANT_LINKS}'), 'a+') as relevant:
+    with open(path(f'../files/{conf.RELEVANT_LINKS}'), 'a') as relevant:
         relevant.write(f'{link}\n')
 
 def reader_relevant_links_in_file():
-    with open(path(f'../files/{conf.RELEVANT_LINKS}'), 'a+') as relevant:
+    with open(path(f'../files/{conf.RELEVANT_LINKS}'), 'r') as relevant:
         return relevant.readlines()
 
 def writer_brand_new_link_in_file(link):
-    with open(path(f'../files/{conf.PREVIOUSLY_CHECKED_LINKS}'), 'a+') as checked_links:
+    with open(path(f'../files/{conf.PREVIOUSLY_CHECKED_LINKS}'), 'a') as checked_links:
         checked_links.write(f'{link}\n')
 
 def reader_brand_new_link_in_file():
-    with open(path(f'../files/{conf.PREVIOUSLY_CHECKED_LINKS}'), 'a+') as checked_links:
+    with open(path(f'../files/{conf.PREVIOUSLY_CHECKED_LINKS}'), 'r') as checked_links:
         return checked_links.readlines()
 
 def writer_page_info(link):
-    with open(path(f'../files/{conf.DATA_FILE}'), 'a+') as data_file:
+    with open(path(f'../files/{conf.DATA_FILE}'), 'a') as data_file:
         data_file.write(f'{link}\n')
 
 def truncate():
@@ -151,8 +151,29 @@ def truncate():
         f.truncate(0)
 
 
+def delete_duplicate_links_at_file(file, type):
+    tmp = set(file)
+
+    if type == 'relevant':
+        with open(path(f'../files/{conf.RELEVANT_LINKS}'), 'r+') as rl:
+            rl.truncate(0)
+
+        for f in tmp:
+            with open(path(f'../files/{conf.RELEVANT_LINKS}'), 'a') as relevant:
+                relevant.write(f'{f}')
+    elif type == 'previously':
+        with open(path(f'../files/{conf.PREVIOUSLY_CHECKED_LINKS}'), 'r+') as pcl:
+            pcl.truncate(0)
+
+        for f in tmp:
+            with open(path(f'../files/{conf.PREVIOUSLY_CHECKED_LINKS}'), 'a') as checked_links:
+                checked_links.write(f'{f}')
+
+
+
 # Скроллим страницу профилей с фильтром
 def scroll_and_collect_pages(driver_manager, links_count, scroll_pause, find_brand_new_link=True, truncate_before=False):
+
     pages = []
     read_relevant_links = reader_relevant_links_in_file()
     read_brand_new_links = reader_brand_new_link_in_file()
@@ -164,6 +185,10 @@ def scroll_and_collect_pages(driver_manager, links_count, scroll_pause, find_bra
         driver_manager.execute_script("return document.body.scrollHeight")
 
         while len(pages) <= links_count:
+
+            delete_duplicate_links_at_file(read_relevant_links, 'relevant')
+            delete_duplicate_links_at_file(read_brand_new_links, 'previously')
+
             driver_manager.execute_script("window.scrollTo(0, document.body.scrollHeight)")
             time.sleep(scroll_pause)
 
@@ -179,16 +204,22 @@ def scroll_and_collect_pages(driver_manager, links_count, scroll_pause, find_bra
             # Не сохраняем повторные ссылки в pages[]
 
             for link in links:
-                if link.get('href') not in pages:
-                    pages.append(link.get('href'))
-
                 if '__tn__=%3C' in link.get('href'):
+                    continue
+
+                if link.get('href') not in pages and link.get('href') + '\n' not in read_relevant_links:
+                    pages.append(link.get('href'))
+                elif link.get('href') in pages:
                     pages.remove(link.get('href'))
+                else:
+                    continue
+
+
 
             # Если не нужно при повторном проходе сравнивать ссылки с предыдущими проходами
             if find_brand_new_link == False:
                 for p in pages:
-                    if p + '\n' in set(read_relevant_links):
+                    if p in pages and p + '\n' in set(read_relevant_links):
                         pages.remove(p)
                     else:
                         pass
@@ -197,10 +228,7 @@ def scroll_and_collect_pages(driver_manager, links_count, scroll_pause, find_bra
                     if p2 + '\n' not in set(read_brand_new_links):
                         writer_brand_new_link_in_file(p2)
                     else:
-                        if p2 + '\n' in set(read_relevant_links) or p2 + '\n' in set(read_brand_new_links):
-                            pages.remove(p2)
-                        else:
-                            pass
+                        pass
 
     except Exception as e:
         print(e)
